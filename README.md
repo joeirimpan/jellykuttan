@@ -306,6 +306,53 @@ $MEDIA_DIR/                     # Media storage
     └── incomplete/
 ```
 
+## Cloudflare WARP (Optional — Bypass ISP Blocks)
+
+If your ISP blocks torrent indexer sites, you can install **Cloudflare WARP** on the host machine to route traffic through Cloudflare's network.
+
+### Installation (Fedora)
+
+```bash
+# Add Cloudflare WARP repo
+curl -fsSl https://pkg.cloudflareclient.com/cloudflare-warp-ascii.repo \
+  | sudo tee /etc/yum.repos.d/cloudflare-warp.repo
+
+# Install
+sudo dnf install -y cloudflare-warp
+```
+
+### Setup
+
+```bash
+# Register (one-time, --accept-tos must come before the subcommand)
+warp-cli --accept-tos registration new
+
+# Connect
+warp-cli --accept-tos connect
+
+# Verify it's working
+curl https://www.cloudflare.com/cdn-cgi/trace/ | grep warp
+# Should show: warp=on
+```
+
+### Useful Commands
+
+```bash
+warp-cli status        # Check connection status
+warp-cli connect       # Connect to WARP
+warp-cli disconnect    # Disconnect from WARP
+```
+
+Shell aliases (added to `~/.zshrc`):
+```bash
+alias cf-warp-on='warp-cli connect && warp-cli status'
+alias cf-warp-off='warp-cli disconnect && warp-cli status'
+```
+
+> **Note:** WARP runs on the host, so all Docker containers (Prowlarr, FlareSolverr, etc.) benefit from it automatically since they share the host's network route. The `dns: 1.1.1.1` entries in `docker-compose.yml` complement this by ensuring Cloudflare DNS resolution.
+
+---
+
 ## Troubleshooting
 
 - **Can't connect between services?** They're all on the `media-net` Docker network and refer to each other by container name.
