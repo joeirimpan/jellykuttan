@@ -1,0 +1,142 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - "8096:8096"
+    volumes:
+      - ./config/jellyfin:/config
+      - ${MEDIA_DIR:-~/media}/movies:/data/movies
+      - ${MEDIA_DIR:-~/media}/tv:/data/tv
+    devices:
+      - /dev/dri:/dev/dri  # Intel VAAPI hardware transcoding
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    networks:
+      - media-net
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: jellyseerr
+    restart: unless-stopped
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./config/jellyseerr:/app/config
+    environment:
+      - TZ=Asia/Kolkata
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    networks:
+      - media-net
+    depends_on:
+      - jellyfin
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    restart: unless-stopped
+    ports:
+      - "7878:7878"
+    volumes:
+      - ./config/radarr:/config
+      - ${MEDIA_DIR:-~/media}/movies:/movies
+      - ${MEDIA_DIR:-~/media}/downloads:/downloads
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    networks:
+      - media-net
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    restart: unless-stopped
+    ports:
+      - "8989:8989"
+    volumes:
+      - ./config/sonarr:/config
+      - ${MEDIA_DIR:-~/media}/tv:/tv
+      - ${MEDIA_DIR:-~/media}/downloads:/downloads
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    networks:
+      - media-net
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    restart: unless-stopped
+    ports:
+      - "9696:9696"
+    volumes:
+      - ./config/prowlarr:/config
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    networks:
+      - media-net
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    volumes:
+      - ./config/qbittorrent:/config
+      - ${MEDIA_DIR:-~/media}/downloads:/downloads
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+      - WEBUI_PORT=8080
+    networks:
+      - media-net
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./config/caddy/data:/data
+      - ./config/caddy/config:/config
+    networks:
+      - media-net
+    depends_on:
+      - jellyfin
+      - jellyseerr
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    restart: unless-stopped
+    ports:
+      - "8191:8191"
+    environment:
+      - TZ=Asia/Kolkata
+    dns:
+      - 1.1.1.1
+      - 1.0.0.1
+    networks:
+      - media-net
+
+networks:
+  media-net:
+    driver: bridge

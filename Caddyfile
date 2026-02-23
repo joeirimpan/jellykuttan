@@ -1,0 +1,48 @@
+:80 {
+	# Radarr (handles /radarr base URL itself)
+	handle /radarr* {
+		reverse_proxy radarr:7878
+	}
+
+	# Sonarr (handles /sonarr base URL itself)
+	handle /sonarr* {
+		reverse_proxy sonarr:8989
+	}
+
+	# Prowlarr (handles /prowlarr base URL itself)
+	handle /prowlarr* {
+		reverse_proxy prowlarr:9696
+	}
+
+	# Jellyfin
+	handle /jellyfin/* {
+		uri strip_prefix /jellyfin
+		reverse_proxy jellyfin:8096
+	}
+	handle /jellyfin {
+		redir /jellyfin/ permanent
+	}
+
+	# Jellyseerr
+	handle /jellyseerr/* {
+		uri strip_prefix /jellyseerr
+		reverse_proxy jellyseerr:5055
+	}
+	handle /jellyseerr {
+		redir /jellyseerr/ permanent
+	}
+
+	# qBittorrent
+	handle /qbittorrent/* {
+		uri strip_prefix /qbittorrent
+		reverse_proxy qbittorrent:8080
+	}
+	handle /qbittorrent {
+		redir /qbittorrent/ permanent
+	}
+
+	# Default: Jellyseerr
+	handle {
+		reverse_proxy jellyseerr:5055
+	}
+}
