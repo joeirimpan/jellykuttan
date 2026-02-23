@@ -237,6 +237,53 @@ docker compose up -d
    - Root Folder: `/tv`
    - Test & Save
 
+## Step 9: Configure Caddy Reverse Proxy (URL Base Paths)
+
+Caddy serves all services under a single port (`:80`) using subpaths. Some apps handle base URLs natively, others need Caddy to strip the prefix.
+
+### Radarr, Sonarr, Prowlarr — Set `UrlBase` in config
+
+These apps have a built-in base URL setting. Set it in each app's `config.xml` so they know they're being served under a subpath:
+
+```bash
+for app in sonarr radarr prowlarr; do
+  docker exec $app sed -i "s|<UrlBase></UrlBase>|<UrlBase>/$app</UrlBase>|" /config/config.xml
+done
+
+# Restart for changes to take effect
+docker compose restart sonarr radarr prowlarr
+```
+
+Caddy passes requests through **without stripping** the prefix (the apps handle it themselves):
+```
+handle /radarr*   { reverse_proxy radarr:7878 }
+handle /sonarr*   { reverse_proxy sonarr:8989 }
+handle /prowlarr* { reverse_proxy prowlarr:9696 }
+```
+
+### Jellyfin, Jellyseerr, qBittorrent — Caddy strips the prefix
+
+These apps don't have a native base URL setting, so Caddy strips the subpath before forwarding:
+```
+handle /jellyfin/*    { uri strip_prefix /jellyfin;    reverse_proxy jellyfin:8096 }
+handle /jellyseerr/*  { uri strip_prefix /jellyseerr;  reverse_proxy jellyseerr:5055 }
+handle /qbittorrent/* { uri strip_prefix /qbittorrent; reverse_proxy qbittorrent:8080 }
+```
+
+### Result
+
+All services accessible from a single IP on port 80:
+
+| URL Path        | Service      |
+|-----------------|--------------|
+| `/`             | Jellyseerr (default) |
+| `/radarr`       | Radarr       |
+| `/sonarr`       | Sonarr       |
+| `/prowlarr`     | Prowlarr     |
+| `/jellyfin`     | Jellyfin     |
+| `/jellyseerr`   | Jellyseerr   |
+| `/qbittorrent`  | qBittorrent  |
+
 ---
 
 ## Usage
