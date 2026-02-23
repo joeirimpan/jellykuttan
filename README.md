@@ -237,6 +237,18 @@ docker compose up -d
    - Root Folder: `/tv`
    - Test & Save
 
+> **TMDB / IPv6 issue**: TMDB (The Movie Database) is the API Jellyseerr
+> uses for all movie/show metadata — posters, descriptions, ratings, search
+> results, and trending content. Its calls may fail inside Docker.
+> Docker's bridge network can't route IPv6 (`ENETUNREACH`), and if Node.js
+> tries IPv6 first (depends on DNS resolver ordering), TMDB requests fail.
+> Setting `forceIpv4First` ensures IPv4 is always preferred. Fix this by
+> editing `config/jellyseerr/settings.json` and setting:
+> ```json
+> "network": { "forceIpv4First": true, ... }
+> ```
+> Then restart Jellyseerr (`docker compose restart jellyseerr`).
+
 ## Step 9: Configure Caddy Reverse Proxy (URL Base Paths)
 
 Caddy serves all services under a single port (`:80`) using subpaths. Some apps handle base URLs natively, others need Caddy to strip the prefix.
