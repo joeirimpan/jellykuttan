@@ -43,7 +43,7 @@ This sets up a complete **automated media server** using Docker Compose.
 
 - **Radarr** — Movie manager. You tell it "I want Inception", it searches torrents, picks the best quality, downloads it, and organizes it into `/movies/Inception (2010)/`.
 - **Sonarr** — TV show manager. Same as Radarr but for TV. Can auto-download new episodes as they air.
-- **Prowlarr** — Indexer manager. Connects to torrent sites (1337x, YTS, etc.) once, and syncs them to both Radarr & Sonarr automatically.
+- **Prowlarr** — Indexer manager. Connects to torrent indexers once, and syncs them to both Radarr & Sonarr automatically.
 - **qBittorrent** — Torrent download client. Does the actual downloading.
 - **Jellyfin** — Media server. Streams your content with a Netflix-like UI.
 - **Jellyseerr** — Request UI. Discover & request movies/shows with a clean interface.
@@ -55,9 +55,9 @@ You request "Inception" in Jellyseerr
         ↓
 Jellyseerr tells Radarr "get Inception"
         ↓
-Radarr asks Prowlarr "search all torrent sites for Inception"
+Radarr asks Prowlarr "search all indexers for Inception"
         ↓
-Prowlarr searches 1337x, YTS, etc. → returns results
+Prowlarr searches configured indexers → returns results
         ↓
 Radarr picks the best torrent → sends to qBittorrent
         ↓
@@ -145,14 +145,8 @@ docker compose up -d
 2. Set up authentication (username/password) when prompted
 3. Add indexers:
    - Go to **Indexers → Add Indexer**
-   - Search for public indexers like:
-     - **1337x**
-     - **RARBG** (if available)
-     - **The Pirate Bay**
-     - **EZTV** (for TV shows)
-     - **YTS** (for movies, small sizes)
-     - **Nyaa** (for anime)
-   - Add each one — most public indexers need no configuration
+   - Search for and add your preferred public or private indexers
+   - Most public indexers need no configuration
 4. Add Apps (connect to Radarr & Sonarr):
    - Go to **Settings → Apps → Add Application**
    - Add **Radarr**:
