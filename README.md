@@ -143,11 +143,18 @@ docker compose up -d
 
 1. Open **http://localhost:9696**
 2. Set up authentication (username/password) when prompted
-3. Add indexers:
+3. **Add FlareSolverr as an Indexer Proxy** (needed for Cloudflare-protected indexers):
+   - Go to **Settings → Indexers** → scroll to **"Indexer Proxies"** section at the bottom
+   - Click **+** → select **FlareSolverr**
+   - Tag: `flaresolverr`
+   - Host: `http://flaresolverr:8191` (use the Docker container name, not `localhost`)
+   - Save
+4. **Add indexers**:
    - Go to **Indexers → Add Indexer**
-   - Search for and add your preferred public or private indexers
-   - Most public indexers need no configuration
-4. Add Apps (connect to Radarr & Sonarr):
+   - For indexers behind Cloudflare protection, add the tag `flaresolverr`
+   - For indexers without Cloudflare protection, no tag needed
+   - The `flaresolverr` tag tells Prowlarr to route requests through FlareSolverr's headless browser to solve Cloudflare challenges
+5. **Add Apps** (connect to Radarr & Sonarr):
    - Go to **Settings → Apps → Add Application**
    - Add **Radarr**:
      - Prowlarr Server: `http://prowlarr:9696`
